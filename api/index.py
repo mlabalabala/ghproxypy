@@ -33,8 +33,22 @@ CHUNK_SIZE = 1024 * 10
 ASSET_URL = 'https://hunshcn.github.io/gh-proxy'
 
 # 预加载资源
-index_html = requests.get(ASSET_URL, timeout=10).text
-icon_r = requests.get(ASSET_URL + '/favicon.ico', timeout=10).content
+# index_html = requests.get(ASSET_URL, timeout=10).text
+# icon_r = requests.get(ASSET_URL + '/favicon.ico', timeout=10).content
+index_html = None
+icon_r = None
+
+def get_index_html():
+    global index_html
+    if index_html is None:
+        index_html = requests.get(ASSET_URL, timeout=10).text
+    return index_html
+
+def get_icon():
+    global icon_r
+    if icon_r is None:
+        icon_r = requests.get(ASSET_URL + '/favicon.ico', timeout=10).content
+    return icon_r
 
 # 正则匹配 GitHub 各类 URL
 exp1 = re.compile(r'^(?:https?://)?github\.com/(?P<author>.+?)/(?P<repo>.+?)/(?:releases|archive)/.*$')
@@ -51,12 +65,12 @@ requests.sessions.default_headers = lambda: CaseInsensitiveDict()
 def index():
     if 'q' in request.args:
         return redirect('/' + request.args.get('q'))
-    return index_html
-
+    return get_index_html()
 
 @app.route('/favicon.ico')
 def icon():
-    return Response(icon_r, content_type='image/vnd.microsoft.icon')
+    return Response(get_icon(), content_type='image/vnd.microsoft.icon')
+
 
 
 def iter_content(self, chunk_size=1, decode_unicode=False):
